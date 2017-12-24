@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <title>Game search</title>
 <style>
+	* {
+		box-sizing: border-box;
+	}
 	html {
 		font-family: Arial, Helvetica, sans-serif;
 		color: #111;
@@ -12,15 +15,22 @@
 	form {
 		padding: 2em;
 		transform: translateY(-20vh);
+		width: 50vw;
 	}
-	input {
+	input, label {
+		display: block;
 		font-size: 2em;
 		padding: 0.25em;
 		border: none;
-		width: 50vw;
 		border-bottom: 1px solid #111;
 		text-align: center;
-		border-radius: 0.5em;		
+		border-radius: 0.5em;
+		background: white;
+		width: 100%;
+		margin: 0.2em;
+	}
+	input[type="checkbox"] {
+		display: none;
 	}
 	html, body {
 		width: 100%;
@@ -38,26 +48,51 @@
 		border-radius: 0.5em;
 		text-align: center;
 	}
+	label {
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		align-items: center;
+		padding: 0.25em 0.5em;
+	}
+	.checkbox-text {
+		flex: 1;
+	}
+	.checkbox-check {
+		font-size: 0.6em;
+		display: none;
+	}
+	input:checked + .checkbox-check {
+		display: block;
+	}
 </style>
 <form>
 	<h1>Enter your search</h1>
 	<input autofocus name="search">
+	<label>
+		<input checked type="checkbox" name="site" value="https://www.universaldist.com/search.aspx?SearchTerm=" />
+		<span class="checkbox-check">✅</span>		
+		<span class="checkbox-text">Universal</span>
+	</label>
+	<label>
+		<input checked type="checkbox" name="site" value="http://grosnor.com/dealers/main.products.php?ID=990&F_ACTION=Search&F_ORDERBY=code&F_KEYWORDS=" />
+		<span class="checkbox-check">✅</span>		
+		<span class="checkbox-text">Grosnor</span>
+	</label>
+	<label>
+		<input checked type="checkbox" name="site" value="https://www.lionrampantimports.com/products-search?qs=" />
+		<span class="checkbox-check">✅</span>
+		<span class="checkbox-text">Lion</span>
+	</label>
 </form>
 <script>
-	var WINDOW_URLS = [
-		"https://www.universaldist.com/search.aspx?SearchTerm=",
-		"http://grosnor.com/dealers/main.products.php?ID=990&F_ACTION=Search&F_ORDERBY=code&F_KEYWORDS=",
-		"https://www.lionrampantimports.com/products-search?qs="
-	];
 
-	var searchWindows = null;
+	var searchWindows = {};
 	var form = document.querySelector("form");
 	form.addEventListener("submit", doSearch);
 
 	function doSearch(e){
 		e.preventDefault();
-		if(!searchWindows)
-			launchWindows();
 
 		var data = new FormData(form);
 
@@ -69,32 +104,22 @@
 	}
 
 	function setSearch(search) {
-		searchWindows.forEach(function(win, index){
-			var newLocation = WINDOW_URLS[index] + search;
-			win.location = newLocation;
+		var chosen = Array.prototype.slice.call(document.querySelectorAll("input:checked"));
+		chosen.forEach(function(input){
+			var url = input.value;
+			var win = getWindow(url);
+			win.location = url + search;
 		});
 	}
 
-
-	function launchWindows(){
-		var windowWidth = screen.width / WINDOW_URLS.length;
-		var windowHeight = screen.height - 69;
-
-		searchWindows = WINDOW_URLS.map(function(url, index){
-			var windowOffset = windowWidth * index;
-			var windowOptions = 
-					"height=" + windowHeight +
-					",width=" + windowWidth +
-					",left=" + windowOffset;
-
-			return window.open(
-				url,
-				"window" + index,
-				windowOptions
-			);
-		});
+	function getWindow(url) {
+		var existing = searchWindows[url];
+		if(existing && !existing.closed) return existing;
+		return searchWindows[url] = window.open(
+			url,
+			"window" + url
+		);
 	}
-
 
 	function cleanSearch(search) {
 		return search.split(/\s/g).join("+");
