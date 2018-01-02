@@ -65,15 +65,11 @@
 	input:checked + .checkbox-check {
 		display: block;
 	}
-	input[type="submit"] {
-		position: absolute;
-		left: -420666px;
-	}
 </style>
 <form>
 	<h1>Enter your search</h1>
 	<input autofocus name="search" type="search">
-	<input type="submit">
+	<input type="submit" value="Search!">
 	<label>
 		<input checked type="checkbox" name="site" value="https://www.universaldist.com/search.aspx?SearchTerm=" />
 		<span class="checkbox-check">✅</span>		
@@ -120,10 +116,12 @@
 	function getWindow(url) {
 		var existing = searchWindows[url];
 		if(existing && !existing.closed) return existing;
-		return searchWindows[url] = window.open(
+		var newWin = window.open(
 			url,
 			"window" + url
 		);
+		searchWindows[url] = newWin;
+		return newWin;
 	}
 
 	function cleanSearch(search) {
